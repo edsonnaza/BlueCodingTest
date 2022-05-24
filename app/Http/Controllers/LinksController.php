@@ -17,7 +17,7 @@ class LinksController extends Controller
      */
     public function index()
     {     // Dispatch the Job before load the view
-           dispatch(new UpdateUrlJob());
+          // dispatch(new UpdateUrlJob());
            $data=Shortlink::All();
            return view('home',compact('data'));
     }
