@@ -15,10 +15,10 @@ class ShortLinks extends Migration
     {
          Schema::create('short_links', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('shortlink');
+            $table->string('shortlink')->unique();
             $table->string('longlink');
-            $table->integer('counter');
-            $table->string('title');
+            $table->integer('counter')->default(0);
+            $table->string('title')->nullable();
             $table->timestamps();
         });
     }

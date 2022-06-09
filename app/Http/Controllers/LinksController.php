@@ -2,34 +2,66 @@
 
 namespace App\Http\Controllers;
 use Goutte\Client;
-use Illuminate\Http\Request;
+use App\WebContent;
 use App\Models\Shortlink;
-use Illuminate\Support\Str;
 use App\Jobs\UpdateUrlJob;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\UrlValidation;
+use Illuminate\Support\Facades\Validator;
+use App\Rules\UrlRule;
  
 
 class LinksController extends Controller
-{  
+{  protected $result;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {     // Dispatch the Job before load the view
-          // dispatch(new UpdateUrlJob());
+    {    
+ 
+                            
+           /** Get the data from de DDB
+            Every Minute the background job checks if there any empty title 
+            if any empty title the background job update it automatically. */
            $data=Shortlink::All();
            return view('home',compact('data'));
     }
+    
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
+        
+   
+    public function create(Request  $request)
+    {       
          
+     
+             
+
+    $input = $request->validate([
+        'longlink' => 'required|url',
+    ],
+            [ 'longlink.required' => 'The url field can not be blank value.',
+                'longlink.url' => 'The field must be a valid URL.'
+            ]);
+
+     
+                           
+                     // Make the shortlink code
+                        $shortlink=str_random(6); 
+                        $title="";
+
+                        $shorlink=Shortlink::create([
+                                    'shortlink'=>$shortlink,
+                                    'longlink'=>$request->longlink,
+                                    'counter'=>0,
+                                    'title'=>$title
+                            ]);
+
+                        return redirect('/home')->with('message','Data Saved!');
+                
     }
 
     /**
@@ -50,9 +82,20 @@ class LinksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //
+    public function show(Request $request) 
+    {    
+         
+            /** Every click count and save to de DDBB */
+         $urldata=Shortlink::where('id',$request->id)->increment('counter');
+                  
+           
+           /** Open the web site clicked */     
+          return redirect($request->longlink); 
+         
+  
+      
+    
+        return view('visitor', compact('result'));
     }
 
     /**
@@ -93,4 +136,7 @@ class LinksController extends Controller
     {
         //
     }
+
+
+      
 }
